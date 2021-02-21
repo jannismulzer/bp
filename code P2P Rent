@@ -49,7 +49,7 @@ contract SmartLeaseContract {
     }
 
     mapping(address => Lessee) public addressToLessee;
-        Lessee[] public tenants;
+        Lessee[] public lessees;
 
     address payable public lessorAddress;
     string public writtenContractIpfsHash;
