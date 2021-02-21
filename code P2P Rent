@@ -45,6 +45,7 @@ contract SmartLeaseContract {
         uint WODScore;
         bool WODScoreAccepted;
         bool initialized;
+        bool TCUfine;
     }
 
     mapping(address => Lessee) public addressToLessee;
