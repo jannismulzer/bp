@@ -1,55 +1,62 @@
 pragma solidity ^0.5.0;
 
-contract SmartLeaseRegistry {
+contract SmartRentRegistry {
 
-    event LeaseContractCreated(uint timestamp, address newLeaseContractAddress, address landlord, uint8 capacity);
+    event RentContractCreated(uint timestamp, address newRentContractAddress, address lessor, uint8 capacity);
     address[] contracts;
 
-    function createLease(uint8 _capacity) public {
+    function createRent(uint8 _capacity) public {
 
-        address newLeaseContract = address(new SmartLeaseContract(msg.sender, _capacity));
-        contracts.push(newLeaseContract);
+        address newRentContract = address(new SmartRentContract(msg.sender, _capacity));
+        contracts.push(newRentContract);
         
         emit LeaseContractCreated(block.timestamp, newLeaseContract, msg.sender, _capacity);
     }
 
-    function getLeases() external view returns (address[] memory) {
+    function getRents() external view returns (address[] memory) {
         return contracts;
     }
 
-    function getNumLeases() external view returns (uint) {
+    function getNumRents() external view returns (uint) {
         return contracts.length;
     }
 
 
 }
 
+// WOD Score = Way of driving score, zusammengefasst aus allen bisherigen Mieten. Wir müssen noch eine Function schreiben, in der der Vermieter bestimmen kann, 
+bis zu welchem WOD Score Mieten möglich sind
+
+
 contract SmartLeaseContract {
 
-    event WrittenContractProposed(uint timestamp, string ipfsHash);
-    event TenantAssigned(uint timestamp, address tenantAddress, uint rentAmount, uint depositAmount);
-    event TenantSigned(uint timestamp, address tenantAddress);
-    event DepositPayed(uint timestamp, address tenantAddress, uint amount);
+    event ElectronicContractProposed(uint timestamp, string ipfsHash);
+    event LesseeAssigned(uint timestamp, address lesseeAddress, uint rentAmount, uint depositAmount; uint WODScore);
+    event WODAccepted(uint timestamp, addresslesseeAdress; uint WODScore);
+    event LesseeSigned(uint timestamp, address lesseeAddress);
+    event DepositPayed(uint timestamp, address lesseeAddress, uint amount);
+  
 
-    struct Tenant {
+    struct Lessee {
         uint rentAmount;
         uint depositAmount;
         bool hasSigned;
         bool hasPaidDeposit;
-
+        uint WODScore;
+        bool WODScoreAccepted;
         bool initialized;
     }
 
-    mapping(address => Tenant) public addressToTenant;
-        Tenant[] public tenants;
+    mapping(address => Lessee) public addressToLessee;
+        Lessee[] public tenants;
 
-    address payable public landlordAddress;
+    address payable public lessorAddress;
     string public writtenContractIpfsHash;
 
-    uint8 public tenantOccupancy = 0;
+    uint8 public lesseeOccupancy = 0;
 
     uint deposit;
-    uint8 public TENANT_CAPACITY;
+    uint8 public LESSEE_CAPACITY;
 
     // inheritance would be an issue with external constructors
     constructor(address payable _landlordAddress, uint8 _capacity) public {
