@@ -1,26 +1,36 @@
 pragma solidity ^0.5.0;
 
-contract SmartRentRegistry {
+// First SmartContract will build the basis of the registry.
+// unsigned integer of 256 bits: uint
 
-    event RentContractCreated(uint timestamp, address newRentContractAddress, address lessor, uint8 capacity);
+contract SmartCarSharingRegistry {
+
+    event CarSharingContractCreated(uint timestamp, address newCarSharingContractAddress, address sharer, uint8 capacity);
     address[] contracts;
 
-    function createRent(uint8 _capacity) public {
+    function createShare(uint8 _capacity) public {
 
-        address newRentContract = address(new SmartRentContract(msg.sender, _capacity));
-        contracts.push(newRentContract);
+        address newCarSharingContract = address(new SmartCarSharingContract(msg.sender, _capacity));
+        contracts.push(newCarSharingContract);
         
-        emit LeaseContractCreated(block.timestamp, newLeaseContract, msg.sender, _capacity);
+        emit CarSharingContractCreated(block.timestamp, newCarSharingContract, msg.sender, _capacity);
     }
 
-    function getRents() external view returns (address[] memory) {
+    function getShares() external view returns (address[] memory) {
         return contracts;
     }
 
-    function getNumRents() external view returns (uint) {
+    function getNumShares() external view returns (uint) {
         return contracts.length;
     }
-
+    
+    function getWODScore() external view returns (uint) {
+        return WODScore
+        
+    
+    
+ 
+    }
 
 }
 
@@ -28,13 +38,33 @@ contract SmartRentRegistry {
 bis zu welchem WOD Score Mieten möglich sind
 
 
-contract SmartLeaseContract {
+contract SmartCarSharingContract {
 
-    event ElectronicContractProposed(uint timestamp, string ipfsHash);
-    event LesseeAssigned(uint timestamp, address lesseeAddress, uint rentAmount, uint depositAmount; uint WODScore);
-    event WODAccepted(uint timestamp, addresslesseeAdress; uint WODScore);
-    event LesseeSigned(uint timestamp, address lesseeAddress);
-    event DepositPayed(uint timestamp, address lesseeAddress, uint amount);
+    event RegDriver(uint timestamp, uint DriversLicence); function set(address DriverAddress) public view returns (address) {               // Driver is registered, function sets address
+            address public};                                                        
+    event CreateWOD(uint timestamp, address DriverAddress, uint WODScore); function set(uint x) public {
+            WODScore = x;
+    }
+    
+    
+    event RegSharer(uint timestamp, address SharerAddress, uint Vehicle);
+    event SharerAccepted(uint timestamp, address SharerAddress, uint Vehicle);
+    event CreateVehicle(uint timestamp, address SharerAddress, uint Vehicle; uint WODScore);
+    
+    event RequestedVehicles(uint timestamp, address DriverAddress, uint WODScore);
+    event RequestedBooking(uint timestamp,  address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore);
+    event AcceptedBooking(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore);
+    event SendLocation(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint VehicleLocation);
+    event DepositPayment(uint timestamp, address DriverAddress, address SharerAddress, uint depositAmount);
+    
+    event StartBooking(uint timestamp, addressDriverAddress, address SharerAddress, uint depositAmount, uint Vehicle);
+    event UnlockVehicle(uint timestamp, addressDriverAddress, address SharerAddress, uint Vehicle, uint TCU);
+    event EndBooking(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint TCU);
+    event LockVehicle(uint timestamp, addressDriverAddress, address SharerAddress, uint Vehicle, uint TCU);
+    event DeterminePayment(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint TCU, uint WODScoreMultiple; uint WODScoreSingle);
+    event DepositRefund (uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint WODScoreMultiple, uint WODScoreSingle, uint PaymentAmount, uint DepositAmount)
+    
+ 
   
 
     struct Lessee {
