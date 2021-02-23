@@ -26,13 +26,11 @@ contract SmartCarSharingRegistry {
     
     function getWODScore() external view returns (uint) {
         return WODScore
-        
-    
-    
- 
     }
 
 }
+
+
 
 // WOD Score = Way of driving score, zusammengefasst aus allen bisherigen Mieten. Wir müssen noch eine Function schreiben, in der der Vermieter bestimmen kann, 
 bis zu welchem WOD Score Mieten möglich sind
@@ -42,16 +40,21 @@ contract SmartCarSharingContract {
 
     event RegDriver(uint timestamp, uint DriversLicence); function set(address DriverAddress) public view returns (address) {               // Driver is registered, function sets address
             address public};                                                        
-    event CreateWOD(uint timestamp, address DriverAddress, uint WODScore); function set(uint x) public {
+    event CreateWOD(uint timestamp, address DriverAddress, uint WODScore); function set(uint x) public {                                    // WOD is created
             WODScore = x;
     }
     
     
-    event RegSharer(uint timestamp, address SharerAddress, uint Vehicle);
+    event RegSharer(uint timestamp, address SharerAddress, uint Vehicle); function set(address, uint) public {
+            SharerAddress, vehicle};
+            
     event SharerAccepted(uint timestamp, address SharerAddress, uint Vehicle);
-    event CreateVehicle(uint timestamp, address SharerAddress, uint Vehicle; uint WODScore);
+    event CreateVehicle(uint timestamp, address SharerAddress, uint Vehicle; uint WODScore); function set(address, uint) public {           //Accepted WOD defined, Vehicle defined, SharerAddress defined
+            SharerAddress, Vehicle, WODScore}
     
-    event RequestedVehicles(uint timestamp, address DriverAddress, uint WODScore);
+    event RequestedVehicles(uint timestamp, address DriverAddress, uint WODScore); function get() public view returns {
+            return VehicleLocation};
+            
     event RequestedBooking(uint timestamp,  address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore);
     event AcceptedBooking(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore);
     event SendLocation(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint VehicleLocation);
