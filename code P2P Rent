@@ -40,28 +40,46 @@ contract SmartCarSharingContract {
 
     event RegDriver(uint timestamp, uint DriversLicence); function set(address DriverAddress) public view returns (address) {               // Driver is registered, function sets address
             address public};                                                        
-    event CreateWOD(uint timestamp, address DriverAddress, uint WODScore); function set(uint x) public {                                    // WOD is created
+    event CreateWOD(uint timestamp, address DriverAddress, uint WODScore): function set(uint x) public {                                    // WOD is created
             WODScore = x;
     }
     
     
-    event RegSharer(uint timestamp, address SharerAddress, uint Vehicle); function set(address, uint) public {
+    event RegSharer(uint timestamp, address SharerAddress, uint Vehicle): function set(address, uint) public {
             SharerAddress, vehicle};
             
     event SharerAccepted(uint timestamp, address SharerAddress, uint Vehicle);
-    event CreateVehicle(uint timestamp, address SharerAddress, uint Vehicle; uint WODScore); function set(address, uint) public {           //Accepted WOD defined, Vehicle defined, SharerAddress defined
+    event CreateVehicle(uint timestamp, address SharerAddress, uint Vehicle; uint WODScore): function set(address, uint) public {           //Accepted WOD defined, Vehicle defined, SharerAddress defined
             SharerAddress, Vehicle, WODScore}
     
-    event RequestedVehicles(uint timestamp, address DriverAddress, uint WODScore); function get() public view returns {
+    event RequestedVehicles(uint timestamp, address DriverAddress, uint WODScore): function get() public view returns {
             return VehicleLocation};
             
-    event RequestedBooking(uint timestamp,  address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore);
-    event AcceptedBooking(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore);
-    event SendLocation(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint VehicleLocation);
-    event DepositPayment(uint timestamp, address DriverAddress, address SharerAddress, uint depositAmount);
+    event RequestedBooking(uint timestamp,  address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore): function get(uint){
+            return BookingRequest};
+            
+    event AcceptedBooking(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint WODScore); 
     
-    event StartBooking(uint timestamp, addressDriverAddress, address SharerAddress, uint depositAmount, uint Vehicle);
-    event UnlockVehicle(uint timestamp, addressDriverAddress, address SharerAddress, uint Vehicle, uint TCU);
+    event SendLocation(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint VehicleLocation): function get(uint){
+            return VehicleLocation};
+            
+    event DepositPayment(uint timestamp, address DriverAddress, address SharerAddress, uint depositAmount):  
+                function payDeposit() external payable onlySharer hasSigned {
+                require(msg.value == addressToTenant[msg.sender].depositAmount,
+                "Amount of provided deposit does not match the amount of required deposit");
+
+                require(addressToDriver[msg.sender].hasPaidDeposit == false, "The driver has already paid the deposit");
+
+                deposit += msg.value;
+                addressToDriver[msg.sender].hasPaidDeposit = true;
+
+                emit DepositPayed(block.timestamp, msg.sender, msg.value)};
+    
+    event StartBooking(uint timestamp, addressDriverAddress, address SharerAddress, uint depositAmount, uint Vehicle): function(){
+            return BookingStart};
+    
+    event UnlockVehicle(uint timestamp, addressDriverAddress, address SharerAddress, uint Vehicle, uint TCU); function send(address DriverAddress, uint TCU){
+            return UnlockVehicle};
     event EndBooking(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint TCU);
     event LockVehicle(uint timestamp, addressDriverAddress, address SharerAddress, uint Vehicle, uint TCU);
     event DeterminePayment(uint timestamp, address DriverAddress, address SharerAddress, uint Vehicle, uint TCU, uint WODScoreMultiple; uint WODScoreSingle);
@@ -70,7 +88,7 @@ contract SmartCarSharingContract {
  
   
 
-    struct Lessee {
+    struct Driver {
         uint rentAmount;
         uint depositAmount;
         bool hasSigned;
@@ -81,42 +99,32 @@ contract SmartCarSharingContract {
         bool TCUfine;
     }
 
-    mapping(address => Lessee) public addressToLessee;
-        Lessee[] public lessees;
+    mapping(address => Driver) public addressToDriver;
+       Driver[] public Drivers;
 
-    address payable public lessorAddress;
+    address payable public SharerAddress;
     string public writtenContractIpfsHash;
 
-    uint8 public lesseeOccupancy = 0;
+    uint8 public DriverOccupancy = 0;
 
     uint deposit;
-    uint8 public LESSEE_CAPACITY;
+    uint8 public DRIVER_CAPACITY;
 
-    // inheritance would be an issue with external constructors
-    constructor(address payable _landlordAddress, uint8 _capacity) public {
-        require(_landlordAddress != address(0), "Landlord address must not be zero!");
-        landlordAddress = _landlordAddress;
 
-        TENANT_CAPACITY = _capacity;
     }
 
-    modifier onlyTenant() {
-        require(addressToTenant[msg.sender].initialized == true, "Only a tenant can invoke this functionality");
+    modifier onlyDriver() {
+        require(addressToDriver[msg.sender].initialized == true, "Only a driver can invoke this functionality");
         _;
     }
 
-    modifier onlyLandlord() {
-        require(msg.sender == landlordAddress, "Only the landlord can invoke this functionality");
+    modifier onlySharer() {
+        require(msg.sender == SharerAddress, "Only a sharer can invoke this functionality");
         _;
     }
 
-    modifier isContractProposed() {
-        require(!(isSameString(writtenContractIpfsHash, "")), "The written contract has not been proposed yet");
-        _;
-    }
-
-    modifier hasSigned() {
-        require(addressToTenant[msg.sender].hasSigned == true, "Tenant must sign the contract before invoking this functionality");
+    modifier isBookingAccepted() {
+        require(!(isSameString(BookingAccepted, "")), "The booking has not been accepted yet");
         _;
     }
     
@@ -124,48 +132,6 @@ contract SmartCarSharingContract {
         require(addr != address(0), "0th address is not allowed!");
         _;
     }
-
-    function proposeWrittenContract(string calldata _writtenContractIpfsHash) external onlyLandlord {
-        // Update written contract ipfs hash
-        writtenContractIpfsHash = _writtenContractIpfsHash;
-        emit WrittenContractProposed(block.timestamp, _writtenContractIpfsHash);
-    }
-
-    function assignTenant(address _tenantAddress, uint _rentAmount, uint _depositAmount)
-        external onlyLandlord isContractProposed notZeroAddres(_tenantAddress){
-        // require room in the house
-        require(tenantOccupancy < TENANT_CAPACITY, "The rental unit is fully occupied.");
-        require(_tenantAddress != landlordAddress, "Landlord is not allowed to be a tenant at the same time.");
-        require(addressToTenant[_tenantAddress].initialized == false, "Duplicate tenants are not allowed.");
-
-        tenants.push(Tenant(_rentAmount, _depositAmount, false, false, true));
-        addressToTenant[_tenantAddress] = tenants[tenantOccupancy];
-        tenantOccupancy++;
-
-        emit TenantAssigned(block.timestamp, _tenantAddress, _rentAmount, _depositAmount);
-    }
-
-    function signContract() external onlyTenant isContractProposed {
-        require(addressToTenant[msg.sender].hasSigned == false, "The tenant has already signed the contract");
-
-        // Tenant signed
-        addressToTenant[msg.sender].hasSigned = true;
-
-        emit TenantSigned(block.timestamp, msg.sender);
-    }
-
-    function payDeposit() external payable onlyTenant hasSigned {
-        require(msg.value == addressToTenant[msg.sender].depositAmount,
-            "Amount of provided deposit does not match the amount of required deposit");
-
-        require(addressToTenant[msg.sender].hasPaidDeposit == false, "The tenant has already paid the deposit");
-
-        deposit += msg.value;
-        addressToTenant[msg.sender].hasPaidDeposit = true;
-
-        emit DepositPayed(block.timestamp, msg.sender, msg.value);
-    }
-
 
   function isSameString(string memory string1, string memory string2) private pure returns (bool) {
     return keccak256(abi.encodePacked(string1)) == keccak256(abi.encodePacked(string2));
